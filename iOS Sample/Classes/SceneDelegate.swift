@@ -1,8 +1,8 @@
 //
 //  SceneDelegate.swift
-//  iOS Sample
+//  MediaPlayerSample
 //
-//  Created by YiYuan on 2024/10/23.
+//  Created by YiYuan on 2024/10/12.
 //
 
 import UIKit
