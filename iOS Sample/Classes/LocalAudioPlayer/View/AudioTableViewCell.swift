@@ -38,6 +38,9 @@ class AudioTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         
+        favoriteAction = nil
+        loopAction = nil
+        
         isCurrentPlay = false
         
         downloadProgressLabel.text = ""
@@ -67,10 +70,9 @@ class AudioTableViewCell: UITableViewCell {
         
         nameLabel.text = model.displayName
         loopButton.isSelected = isLoop
-        favoriteButton.isSelected = UserDefaults.standard.bool(forKey: "favorite-\(model.id)")
         reloadProgressLabel(with: model.fileStatus)
         
-        self.model?.fileStatusChangedAction = { [weak self] model, status in
+        self.model?.fileDownloadStatusChangedAction = { [weak self] model, status in
             guard let `self` = self else { return }
             guard self.model != nil, self.model?.id == model.id else {
                 return
@@ -79,6 +81,10 @@ class AudioTableViewCell: UITableViewCell {
         }
         
         reloadSubViews()
+    }
+    
+    func setFavorite(_ isFavorite: Bool) {
+        favoriteButton.isSelected = isFavorite
     }
     
     func reloadSubViews() {

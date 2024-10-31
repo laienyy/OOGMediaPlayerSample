@@ -42,7 +42,7 @@ class LocalAudioPlayerViewController: UIViewController {
     var listViewController: MediaListViewController?
     
     
-    var settings = OOGAudioPlayerSettings(scheme: .bgm)
+    var settings = OOGAudioPlayerSettings.loadScheme(.bgm)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -185,11 +185,11 @@ extension LocalAudioPlayerViewController: MediaPlayerProviderDelegate {
         // 取消下载
         audioItem?.cancelFileDownload()
         // 取消监听状态回调
-        audioItem?.fileStatusChangedAction = nil
+        audioItem?.fileDownloadStatusChangedAction = nil
         
         if var nextSong = playerProvider.getSong(at: indexPath) {
             
-            nextSong.fileStatusChangedAction = { [weak self] item, status in
+            nextSong.fileDownloadStatusChangedAction = { [weak self] item, status in
                 switch status {
                 case .normal, .downloaded:
                     self?.progressView.isHidden = true
@@ -209,7 +209,7 @@ extension LocalAudioPlayerViewController: MediaPlayerProviderDelegate {
         return indexPath
     }
     
-    func mediaPlayerControl(_ provider: MediaPlayerControl, at indexPath: IndexPath?, playForwardError error: any Error) {
+    func mediaPlayerControl(_ provider: MediaPlayerControl, playAt indexPath: IndexPath?, error: any Error) {
         
         if indexPath != nil, playerProvider.currentIndexPath != indexPath {
             return

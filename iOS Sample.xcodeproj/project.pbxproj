@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		183014A42CC8AF6E0014469C /* OOGMediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 183014A32CC8AF6E0014469C /* OOGMediaPlayer.framework */; };
+		18601E642CD0E9BE003BE37D /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 18601E632CD0E9BE003BE37D /* SnapKit */; };
+		18CAF4292CD36C1600DF5A93 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 18CAF4282CD36C1600DF5A93 /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +21,7 @@
 		1830149C2CC8AF280014469C /* Exceptions for "iOS Sample" folder in "iOS Sample" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Classes/LocalAudioPlayer/View/AudioPlayerWidgetView.swift,
 				Info.plist,
 			);
 			target = 183014892CC8AF270014469C /* iOS Sample */;
@@ -41,7 +44,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18601E642CD0E9BE003BE37D /* SnapKit in Frameworks */,
 				183014A42CC8AF6E0014469C /* OOGMediaPlayer.framework in Frameworks */,
+				18CAF4292CD36C1600DF5A93 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +98,9 @@
 			);
 			name = "iOS Sample";
 			packageProductDependencies = (
+				18601E632CD0E9BE003BE37D /* SnapKit */,
+				18601E652CD0E9BE003BE37D /* SnapKit-Dynamic */,
+				18CAF4282CD36C1600DF5A93 /* Lottie */,
 			);
 			productName = "iOS Sample";
 			productReference = 1830148A2CC8AF270014469C /* iOS Sample.app */;
@@ -122,6 +130,10 @@
 			);
 			mainGroup = 183014812CC8AF270014469C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				18601E622CD0E9BE003BE37D /* XCRemoteSwiftPackageReference "SnapKit" */,
+				18CAF4272CD36C1600DF5A93 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1830148B2CC8AF270014469C /* Products */;
 			projectDirPath = "";
@@ -162,6 +174,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS Sample/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "BGM Sample";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -194,6 +207,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS Sample/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "BGM Sample";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -358,6 +372,43 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		18601E622CD0E9BE003BE37D /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.1;
+			};
+		};
+		18CAF4272CD36C1600DF5A93 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		18601E632CD0E9BE003BE37D /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18601E622CD0E9BE003BE37D /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		18601E652CD0E9BE003BE37D /* SnapKit-Dynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18601E622CD0E9BE003BE37D /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = "SnapKit-Dynamic";
+		};
+		18CAF4282CD36C1600DF5A93 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18CAF4272CD36C1600DF5A93 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 183014822CC8AF270014469C /* Project object */;
 }
