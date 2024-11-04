@@ -33,7 +33,7 @@ class LocalAudioPlayerViewController: UIViewController {
     @IBOutlet weak var enableCacheButton: UISwitch!
     
     // 播放器
-    let playerProvider = OOGAudioPlayerProvider()
+    let playerProvider = OOGAudioPlayerProvider<AudioAlbumModel>()
     
 //    var medias = [[item, itemB], [itemC, itemD, itemE], [item3_1, item3_2]]
     
@@ -171,6 +171,10 @@ extension LocalAudioPlayerViewController {
 
 extension LocalAudioPlayerViewController: MediaPlayerProviderDelegate {
     
+    func mediaPlayerControl(_ provider: MediaPlayerControl, willStopAt indexPath: IndexPath, error: any Error) {
+        
+    }
+    
     func mediaPlayerControl(_ provider: MediaPlayerControl, shouldPlay indexPath: IndexPath) -> IndexPath? {
         if let currentIndexPath = provider.currentIndexPath,
            provider.isLastIndexPathInItems(currentIndexPath),
@@ -181,27 +185,29 @@ extension LocalAudioPlayerViewController: MediaPlayerProviderDelegate {
         }
         
         // 停止
-        var audioItem = playerProvider.currentSong()
+        let audioItem = playerProvider.currentSong()
         // 取消下载
         audioItem?.cancelFileDownload()
-        // 取消监听状态回调
-        audioItem?.fileDownloadStatusChangedAction = nil
         
-        if var nextSong = playerProvider.getSong(at: indexPath) {
-            
-            nextSong.fileDownloadStatusChangedAction = { [weak self] item, status in
+        if let nextSong = playerProvider.getSong(at: indexPath) {
+            nextSong.handleFileDownloadStatusChanged { [weak self] item, status in
+                guard let `self` = self, self.playerProvider.currentItem()?.id == item.id else {
+                    // 当自身释放 or 当前item不是正在播放的item时，释放本closure
+                    return false
+                }
                 switch status {
                 case .normal, .downloaded:
-                    self?.progressView.isHidden = true
-                    self?.progressView.progress = 0
+                    self.progressView.isHidden = true
+                    self.progressView.progress = 0
                 case let .failed(error):
                     break
                 case let .downloading(progress):
-                    self?.progressView.isHidden = false
-                    self?.progressView.progress = Float(progress)
+                    self.progressView.isHidden = false
+                    self.progressView.progress = Float(progress)
                 @unknown default:
                     break
                 }
+                return true
             }
         }
         

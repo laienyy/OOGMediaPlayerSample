@@ -10,7 +10,9 @@ import UIKit
 import OOGMediaPlayer
 
 protocol AudioPlayerOwner {
-    var playerProvider: OOGAudioPlayerProvider { get }
+    associatedtype T: BGMAlbum
+    
+    var playerProvider: OOGAudioPlayerProvider<T> { get }
     var settings: OOGAudioPlayerSettings { get }
 }
 
@@ -67,14 +69,23 @@ extension AudioPlayerOwner {
     }
     
     
+    func isFavorite(song: BGMSong) -> Bool {
+        return settings.favoriteList.contains(song.id)
+    }
+    
     func isLoop(song: BGMSong) -> Bool {
         return playerProvider.loopMode == .single && settings.loopDesignatedSongID == song.id
+    }
+    
+    func isLoop(album: any BGMAlbum) -> Bool {
+        return playerProvider.loopMode == .album && settings.loopDesignateAlbumID == album.id
     }
 
 }
 
 
 class OOG200AudioPlayerViewController: UIViewController, AudioPlayerOwner {
+    typealias Album = AudioAlbumModel
     
     // 当前播放音乐信息部分
     @IBOutlet weak var playerWidgetView: AudioPlayerWidgetView!
@@ -98,7 +109,7 @@ class OOG200AudioPlayerViewController: UIViewController, AudioPlayerOwner {
     
     var settings = OOGAudioPlayerSettings.loadScheme(.bgm)
     
-    let playerProvider = OOGAudioPlayerProvider()
+    let playerProvider = OOGAudioPlayerProvider<Album>()
     
     deinit {
         print(OOG200AudioPlayerViewController.classNameStr, "deinit")
@@ -362,7 +373,6 @@ extension OOG200AudioPlayerViewController {
     
     func showAlbumList() {
         let vc = OOG200AudioListViewController(playerProvider: playerProvider)
-        vc.albums = playerProvider.albumList
         navigationController?.pushViewController(vc, animated: true)
     }
 }

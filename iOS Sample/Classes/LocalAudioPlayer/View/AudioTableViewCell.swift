@@ -72,13 +72,14 @@ class AudioTableViewCell: UITableViewCell {
         loopButton.isSelected = isLoop
         reloadProgressLabel(with: model.fileStatus)
         
-        self.model?.fileDownloadStatusChangedAction = { [weak self] model, status in
-            guard let `self` = self else { return }
+        model.handleFileDownloadStatusChanged({ [weak self] model, status in
+            guard let `self` = self else { return false }
             guard self.model != nil, self.model?.id == model.id else {
-                return
+                return false
             }
             self.reloadProgressLabel(with: status)
-        }
+            return true
+        })
         
         reloadSubViews()
     }

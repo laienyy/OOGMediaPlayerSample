@@ -18,7 +18,9 @@ class BGMItemTableViewCell: UITableViewCell {
         case pause
     }
     
+    // 白色背景
     let whiteBackgroundContainer = UIView()
+    // 灰色背景
     let grayBackgroundView = UIView()
     let stackView = UIStackView()
     
@@ -27,13 +29,46 @@ class BGMItemTableViewCell: UITableViewCell {
     var nameLabel = UILabel()
     var loopButton = UIButton(type: .custom)
     var favoriteButton = UIButton(type: .custom)
-    
+    let lockImageView = UIImageView(image: UIImage(named: "program_class_beginner_lock"))
+
     var bottomSeparatorLine = UIView()
     
-    var favoriteAction: ((BGMItemTableViewCell) -> Void)?
-    var loopAction: ((BGMItemTableViewCell) -> Void)?
     
-    var status: Status = .idle {
+    typealias CellCallback = (BGMItemTableViewCell) -> Void
+    
+    var favoriteAction: CellCallback?
+    var loopAction: CellCallback?
+    var lockAction: CellCallback?
+    
+    var lockTapGesture: UITapGestureRecognizer?
+    
+    public var isFavorite: Bool = false {
+        didSet {
+            favoriteButton.isSelected = isFavorite
+        }
+    }
+    
+    public var isLoop: Bool = false {
+        didSet {
+            loopButton.isSelected = isLoop
+        }
+    }
+    
+    public var isLock: Bool = false {
+        didSet {
+            lockImageView.isHidden = !isLock
+            favoriteButton.isHidden = isLock
+            loopButton.isHidden = isLock
+            lockTapGesture?.isEnabled = isLock
+            
+            if isLock, lockTapGesture == nil {
+                lockTapGesture = UITapGestureRecognizer(target: self, action: #selector(lockTapped))
+                whiteBackgroundContainer.addGestureRecognizer(lockTapGesture!)
+            }
+        }
+    }
+    
+    var cellStatus: Status = .idle {
         didSet {
             self.updateUIByStatus()
         }
@@ -57,6 +92,12 @@ class BGMItemTableViewCell: UITableViewCell {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        isLock = false
     }
     
     
@@ -103,7 +144,7 @@ class BGMItemTableViewCell: UITableViewCell {
         stackView.addArrangedSubview(nameLabel)
         stackView.addArrangedSubview(loopButton)
         stackView.addArrangedSubview(favoriteButton)
-        
+        stackView.addArrangedSubview(lockImageView)
         
         nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         loopButton.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -120,10 +161,16 @@ class BGMItemTableViewCell: UITableViewCell {
         }
         
         loopButton.snp.makeConstraints { make in
-            make.width.height.equalTo(32)
+            make.width.equalTo(32)
+            make.height.equalToSuperview()
         }
         
         favoriteButton.snp.makeConstraints { make in
+            make.width.equalTo(32)
+            make.height.equalToSuperview()
+        }
+        
+        lockImageView.snp.makeConstraints { make in
             make.width.height.equalTo(32)
         }
         
@@ -165,40 +212,44 @@ class BGMItemTableViewCell: UITableViewCell {
         favoriteAction?(self)
     }
     
-
+    @objc func lockTapped(_ recognizer: UITapGestureRecognizer) {
+        if recognizer.state == .ended {
+            lockAction?(self)
+        }
+    }
 }
 
 extension BGMItemTableViewCell {
     
     func load(_ song: any BGMSong) {
-        self.model = song
-        self.model?.statusChangedAction = { [weak self] model, status in
-            guard let `self` = self else { return }
-            
-            print("Status changed", status, self.model?.displayName)
-            guard self.model?.id == model.id else {
-                return
+        model = song
+        model?.handleStatusChanged { [weak self] item, status in
+            guard let `self` = self, song.id == item.id else {
+                return false
             }
+            print("Status changed", status, item)
             self.updateStatusByModel()
+            return true
         }
+        
         updateStatusByModel()
         nameLabel.text = song.displayName
     }
     
     func updateStatusByModel() {
         guard let status = self.model?.status else {
-            self.status = .idle
+            self.cellStatus = .idle
             return
         }
         switch status {
         case .idle, .error, .stoped:
-            self.status = .idle
+            self.cellStatus = .idle
         case .downloading:
-            self.status = .downloading
+            self.cellStatus = .downloading
         case .paused, .prepareToPlay:
-            self.status = .pause
+            self.cellStatus = .pause
         case .playing:
-            self.status = .playing
+            self.cellStatus = .playing
         @unknown default:
             break
         }
@@ -214,9 +265,9 @@ extension BGMItemTableViewCell {
         
         downloadProgressStatusView.isHidden = false
         
-        model?.fileDownloadStatusChangedAction = { [weak self] model, status in
+        model?.handleFileDownloadStatusChanged { [weak self] model, status in
             guard self?.model?.id == model.id else {
-                return
+                return false
             }
             switch status {
             case .downloading(let progress):
@@ -226,10 +277,12 @@ extension BGMItemTableViewCell {
             default:
                 break
             }
+            
+            return true
         }
     }
     
-    func set(isFirst: Bool, isLast: Bool) {
+    func updateCorner(isFirst: Bool, isLast: Bool) {
 
         grayBackgroundView.layer.cornerRadius = 10
         grayBackgroundView.layer.masksToBounds = true
@@ -248,24 +301,11 @@ extension BGMItemTableViewCell {
         bottomSeparatorLine.isHidden = isLast
     }
     
-    func setFavorite(_ isFavorite: Bool) {
-        favoriteButton.isSelected = isFavorite
-    }
-    
-    func setLoop(_ isLoop: Bool) {
-        loopButton.isSelected = isLoop
-    }
-    
     func updateUIByStatus() {
         
         downloadProgressStatusView.isHidden = true
-        nameLabel.textColor = .black
         
-        playingStateView.isHidden = true
-        
-        playingStateView.pause()
-        
-        switch status {
+        switch cellStatus {
         case .downloading:
             handleDownloadAction()
         case .playing:
@@ -276,8 +316,10 @@ extension BGMItemTableViewCell {
             playingStateView.isHidden = false
             playingStateView.pause()
             nameLabel.textColor = #colorLiteral(red: 0.2341707945, green: 0.5062331557, blue: 0.3894308805, alpha: 1)
-        default:
-            break
+        case .idle:
+            nameLabel.textColor = .black
+            playingStateView.isHidden = true
+            playingStateView.pause()
         }
     }
 }
