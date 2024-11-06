@@ -70,16 +70,16 @@ class AudioTableViewCell: UITableViewCell {
         
         nameLabel.text = model.displayName
         loopButton.isSelected = isLoop
-        reloadProgressLabel(with: model.fileStatus)
+        reloadProgressLabel(with: model.downloadProgress)
         
-        model.handleFileDownloadStatusChanged({ [weak self] model, status in
+        model.observeDownloadProgress(self) { [weak self] model, status in
             guard let `self` = self else { return false }
             guard self.model != nil, self.model?.id == model.id else {
                 return false
             }
             self.reloadProgressLabel(with: status)
             return true
-        })
+        }
         
         reloadSubViews()
     }
@@ -94,7 +94,7 @@ class AudioTableViewCell: UITableViewCell {
         nameLabel.font = .systemFont(ofSize: 15, weight: isCurrentPlay ? .medium : .regular)
     }
     
-    func reloadProgressLabel(with status: FileDataStatus) {
+    func reloadProgressLabel(with status: FileDownloadProgress) {
         
         guard isCurrentPlay else {
             downloadProgressLabel.isHidden = true

@@ -8,81 +8,8 @@
 import Foundation
 import UIKit
 import OOGMediaPlayer
-
-protocol AudioPlayerOwner {
-    associatedtype T: BGMAlbum
-    
-    var playerProvider: OOGAudioPlayerProvider<T> { get }
-    var settings: OOGAudioPlayerSettings { get }
-}
-
-@MainActor
-extension AudioPlayerOwner {
-
-    
-    // 设置循环播放 (非单曲、专辑循环使用)
-    func setPlayerLoop(mode: MediaPlayerControl.LoopMode) {
-        playerProvider.loopMode = mode
-        settings.loopMode = mode
-        
-        settings.loopDesignateAlbumID = nil
-        settings.loopDesignatedSongID = nil
-        
-        do {
-            try settings.save()
-            print("AudioPlayer - Set loop mode: \(mode.userInterfaceDisplay)")
-        } catch {
-            print("Save settings error:", error)
-        }
-    }
-    
-    // 设置循环播放 - 单曲
-    func setPlayerSingleLoop(song: BGMSong) {
-        playerProvider.loopMode = .single
-        settings.loopMode = .single
-        
-        settings.loopDesignatedSongID = song.id
-        settings.loopDesignateAlbumID = nil
-        
-        do {
-            try settings.save()
-            print("AudioPlayer - Set loop mode: \(playerProvider.loopMode.userInterfaceDisplay), song ID: \(song.id)")
-        } catch {
-            print("Save settings error:", error)
-        }
-    }
-    
-    // 设置循环播放 - 专辑
-    func setPlayerAlbumLoop(album: any BGMAlbum) {
-        playerProvider.loopMode = .album
-        settings.loopMode = .album
-        
-        settings.loopDesignateAlbumID = album.id
-        settings.loopDesignatedSongID = nil
-        
-        do {
-            try settings.save()
-            print("AudioPlayer - Set loop mode: \(playerProvider.loopMode.userInterfaceDisplay), album ID: \(album.id)")
-        } catch {
-            print("Save settings error:", error)
-        }
-    }
-    
-    
-    func isFavorite(song: BGMSong) -> Bool {
-        return settings.favoriteList.contains(song.id)
-    }
-    
-    func isLoop(song: BGMSong) -> Bool {
-        return playerProvider.loopMode == .single && settings.loopDesignatedSongID == song.id
-    }
-    
-    func isLoop(album: any BGMAlbum) -> Bool {
-        return playerProvider.loopMode == .album && settings.loopDesignateAlbumID == album.id
-    }
-
-}
-
+import MBProgressHUD
+import AVFAudio
 
 class OOG200AudioPlayerViewController: UIViewController, AudioPlayerOwner {
     typealias Album = AudioAlbumModel
@@ -104,11 +31,20 @@ class OOG200AudioPlayerViewController: UIViewController, AudioPlayerOwner {
     // 随机播放按钮
     @IBOutlet weak var shufflePlayButton: UIButton!
     
+    lazy var hud: MBProgressHUD = {
+        let hud = MBProgressHUD(view: self.view)
+        hud.frame = view.bounds
+        hud.mode = .indeterminate
+        hud.contentColor = .white
+        hud.bezelView.blurEffectStyle = .dark
+        hud.bezelView.style = .blur
+        self.view.addSubview(hud)
+        return hud
+    }()
+    
     
     var updateTimeTimer: Timer?
-    
     var settings = OOGAudioPlayerSettings.loadScheme(.bgm)
-    
     let playerProvider = OOGAudioPlayerProvider<Album>()
     
     deinit {
@@ -154,10 +90,22 @@ class OOG200AudioPlayerViewController: UIViewController, AudioPlayerOwner {
     func loadPlayer() {
         Task {
             do {
+                hud.show(animated: true)
                 // 加载歌曲
                 try await playerProvider.getMusics(.oog200, [.animation], playAutomatically: false)
+                hud.hide(animated: true, afterDelay: 0.5)
                 // 根据设置，同步播放器
                 playerProvider.syncSettings(settings)
+
+                if playerProvider.currentIndexPath == nil {
+                    // 当根据设置未开始自动播放时，此处开始自动播放第一首
+                    playerProvider.playNext()
+                }
+                
+                // 激活静音下可播放声音
+                let session = AVAudioSession.sharedInstance()
+                try? session.setCategory(.playback, options: .mixWithOthers)
+                try? session.setActive(true)
                 
             } catch let error {
                 statusLabel.text = "获取歌曲列表失败，错误：\(error.localizedDescription)"
@@ -400,6 +348,11 @@ extension OOG200AudioPlayerViewController: MediaPlayerProviderDelegate {
     }
     
     func mediaPlayerControl(_ provider: MediaPlayerControl, shouldPlay indexPath: IndexPath, current: IndexPath?) -> IndexPath? {
+        
+        guard let item = playerProvider.getSong(at: indexPath), !item.subscription else {
+            let next = nextPlayableIndexPath(from: indexPath)
+            return next
+        }
         
         guard let media = playerProvider.getSong(at: indexPath) else {
             playerWidgetView.audioNameLabel.text = "无"

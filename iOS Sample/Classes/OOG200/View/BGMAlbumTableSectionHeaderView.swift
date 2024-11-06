@@ -15,6 +15,18 @@ class BGMAlbumTableSectionHeaderView: UITableViewHeaderFooterView {
     let coverGrayBg1 = UIView()
     let coverGrayBg2 = UIView()
     
+    let specialIconImageView = UIImageView()
+    var specIconImage: UIImage? {
+        didSet {
+            specialIconImageView.image = specIconImage
+            specialIconImageView.isHidden = specIconImage == nil
+            
+            coverImageView.isHidden = specIconImage != nil
+            coverGrayBg1.isHidden = specIconImage != nil
+            coverGrayBg2.isHidden = specIconImage != nil
+        }
+    }
+    
     let titleLabel = UILabel()
     let subtitleLabel = UILabel()
     let loopButton = UIButton(type: .custom)
@@ -40,6 +52,11 @@ class BGMAlbumTableSectionHeaderView: UITableViewHeaderFooterView {
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        specIconImage = nil
     }
     
     func initialization() {
@@ -70,8 +87,11 @@ class BGMAlbumTableSectionHeaderView: UITableViewHeaderFooterView {
         
         loopButton.addTarget(self, action: #selector(loopButtonPressed), for: .touchUpInside)
         foldButton.addTarget(self, action: #selector(foldButtonPressed), for: .touchUpInside)
+            
+        let tapRecognizer = UITapGestureRecognizer()
+        tapRecognizer.addTarget(self, action: #selector(foldButtonPressed))
         
-        
+        headerContentView.addGestureRecognizer(tapRecognizer)
         headerContentView.backgroundColor = .white
         headerContentView.layer.masksToBounds = true
         contentView.addSubview(headerContentView) { make in
@@ -82,7 +102,7 @@ class BGMAlbumTableSectionHeaderView: UITableViewHeaderFooterView {
         }
         
         
-        headerContentView.addSubviews(coverGrayBg2, coverGrayBg1, coverImageView, titleLabel, subtitleLabel, loopButton, foldButton)
+        headerContentView.addSubviews(specialIconImageView, coverGrayBg2, coverGrayBg1, coverImageView, titleLabel, subtitleLabel, loopButton, foldButton)
         
         coverImageView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(14)
@@ -103,6 +123,13 @@ class BGMAlbumTableSectionHeaderView: UITableViewHeaderFooterView {
             make.trailing.equalTo(coverGrayBg1).offset(4)
             make.top.equalTo(coverImageView).inset(5)
             make.bottom.equalTo(coverImageView).inset(5)
+        }
+        
+        specialIconImageView.snp.makeConstraints { make in
+            make.leading.equalTo(coverImageView)
+            make.width.equalTo(coverImageView).offset(7)
+            make.top.equalTo(coverImageView)
+            make.bottom.equalTo(coverImageView)
         }
         
         

@@ -22,6 +22,7 @@ class BGMItemTableViewCell: UITableViewCell {
     let whiteBackgroundContainer = UIView()
     // 灰色背景
     let grayBackgroundView = UIView()
+    
     let stackView = UIStackView()
     
     var playingStateView = LottieAnimationView()
@@ -98,7 +99,24 @@ class BGMItemTableViewCell: UITableViewCell {
         super.prepareForReuse()
         
         isLock = false
+        
+        model?.removeStatusObserver(self)
+        model?.removeDownloadProgressObserver(self)
+        
     }
+    
+    lazy var statusChangedAction: StatusChangedClosure = {
+        return { [weak self] item, status in
+            guard let `self` = self, let currentModel = self.model, currentModel.id == item.id else {
+                return false
+            }
+            print("Status changed", status, item.fileName)
+            self.updateStatusByModel()
+            return true
+        }
+    }()
+    
+    
     
     
     func initialization() {
@@ -223,14 +241,7 @@ extension BGMItemTableViewCell {
     
     func load(_ song: any BGMSong) {
         model = song
-        model?.handleStatusChanged { [weak self] item, status in
-            guard let `self` = self, song.id == item.id else {
-                return false
-            }
-            print("Status changed", status, item)
-            self.updateStatusByModel()
-            return true
-        }
+        model?.observeStatusChanged(self, statusChangedAction)
         
         updateStatusByModel()
         nameLabel.text = song.displayName
@@ -258,14 +269,14 @@ extension BGMItemTableViewCell {
     
     func handleDownloadAction() {
         
-        if model?.fileStatus.isDownloaded ?? true {
+        if model?.downloadProgress.isDownloaded ?? true {
             downloadProgressStatusView.isHidden = true
             return
         }
         
         downloadProgressStatusView.isHidden = false
         
-        model?.handleFileDownloadStatusChanged { [weak self] model, status in
+        model?.observeDownloadProgress(self) { [weak self] model, status in
             guard self?.model?.id == model.id else {
                 return false
             }
@@ -304,6 +315,8 @@ extension BGMItemTableViewCell {
     func updateUIByStatus() {
         
         downloadProgressStatusView.isHidden = true
+        
+        print("Update UI by status:", cellStatus, model?.displayName ?? "Null")
         
         switch cellStatus {
         case .downloading:
