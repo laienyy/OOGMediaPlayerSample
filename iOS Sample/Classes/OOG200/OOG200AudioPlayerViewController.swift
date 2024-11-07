@@ -11,7 +11,6 @@ import OOGMediaPlayer
 import MBProgressHUD
 import AVFAudio
 
-
 #if DEBUG
 let scheme = ProjectScheme.distribution
 //let scheme = ProjectScheme.preDistribution
@@ -262,9 +261,9 @@ extension OOG200AudioPlayerViewController {
     @IBAction func mixOtherAudioSwitchValueChanged(_ sender: UISwitch) {
 
         if sender.isOn {
-            LocalAudioPlayerProvider.dukeOtherAudio()
+            AVAudioSession.dukeOtherAudio()
         } else {
-            LocalAudioPlayerProvider.mixOtherAudio()
+            AVAudioSession.mixOtherAudio()
         }
     }
     
@@ -437,4 +436,28 @@ extension OOG200AudioPlayerViewController: MediaPlayerProviderDelegate {
         
     }
     
+}
+
+public extension AVAudioSession {
+    static func dukeOtherAudio() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback,
+                                                            mode: AVAudioSession.Mode.default,
+                                                            options: [.mixWithOthers, .duckOthers])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Set duck other audio, error:", error)
+        }
+    }
+
+    static func mixOtherAudio() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback,
+                                                            mode: AVAudioSession.Mode.default,
+                                                            options: [.mixWithOthers])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Set mix other audio, error:", error)
+        }
+    }
 }
