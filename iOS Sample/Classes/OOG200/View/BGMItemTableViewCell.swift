@@ -117,8 +117,6 @@ class BGMItemTableViewCell: UITableViewCell {
     }()
     
     
-    
-    
     func initialization() {
         
         contentView.backgroundColor = #colorLiteral(red: 0.9594742656, green: 0.956212461, blue: 0.9530892968, alpha: 1)
@@ -282,6 +280,7 @@ extension BGMItemTableViewCell {
             }
             switch status {
             case .downloading(let progress):
+                self?.downloadProgressStatusView.isHidden = false
                 self?.downloadProgressStatusView.text = "\(Int(progress * 100))%"
             case .downloaded:
                 self?.downloadProgressStatusView.text = "100%"
@@ -316,10 +315,12 @@ extension BGMItemTableViewCell {
         
         downloadProgressStatusView.isHidden = true
         
-        print("Update UI by status:", cellStatus, model?.displayName ?? "Null")
-        
         switch cellStatus {
         case .downloading:
+            let color = #colorLiteral(red: 0.2341707945, green: 0.5062331557, blue: 0.3894308805, alpha: 1)
+            playingStateView.isHidden = true
+            nameLabel.textColor = color
+            downloadProgressStatusView.textColor = color
             handleDownloadAction()
         case .playing:
             playingStateView.isHidden = false
@@ -331,6 +332,7 @@ extension BGMItemTableViewCell {
             nameLabel.textColor = #colorLiteral(red: 0.2341707945, green: 0.5062331557, blue: 0.3894308805, alpha: 1)
         case .idle:
             nameLabel.textColor = .black
+            downloadProgressStatusView.textColor = .black
             playingStateView.isHidden = true
             playingStateView.pause()
         }

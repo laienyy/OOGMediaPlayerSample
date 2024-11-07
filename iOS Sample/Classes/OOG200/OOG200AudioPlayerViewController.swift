@@ -11,6 +11,17 @@ import OOGMediaPlayer
 import MBProgressHUD
 import AVFAudio
 
+
+#if DEBUG
+let scheme = ProjectScheme.distribution
+//let scheme = ProjectScheme.preDistribution
+//let scheme = ProjectScheme.test
+//let scheme = ProjectScheme.dev
+#else
+let scheme = ProjectScheme.distribution
+#endif
+
+
 class OOG200AudioPlayerViewController: UIViewController, AudioPlayerOwner {
     typealias Album = AudioAlbumModel
     
@@ -92,10 +103,14 @@ class OOG200AudioPlayerViewController: UIViewController, AudioPlayerOwner {
             do {
                 hud.show(animated: true)
                 // 加载歌曲
-                try await playerProvider.getMusics(.oog200, [.animation], playAutomatically: false)
+                try await playerProvider.getMusics(scheme,
+                                                   .oog200,
+                                                   types: [.animation, .planClassicAndChair, .poseLibrary],
+                                                   playAutomatically: false)
                 hud.hide(animated: true, afterDelay: 0.5)
                 // 根据设置，同步播放器
                 playerProvider.syncSettings(settings)
+                playerProvider.resumePlayAudioBySetting(settings)
 
                 if playerProvider.currentIndexPath == nil {
                     // 当根据设置未开始自动播放时，此处开始自动播放第一首

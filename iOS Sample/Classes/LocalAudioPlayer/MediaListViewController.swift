@@ -49,8 +49,9 @@ class MediaListViewController: UIViewController {
         view.addSubview(tableView)
         Task {
             do {
-                let medias = try await ApiProvider.getBackgroundMedia(.oog200, .animation)
-                print(medias)
+//                let info = GetBGMListApiInfo
+//                let medias = try await ApiProvider.getBackgroundMedia()
+//                print(medias)
             } catch let error {
                 print("Get media list failed:", error)
             }

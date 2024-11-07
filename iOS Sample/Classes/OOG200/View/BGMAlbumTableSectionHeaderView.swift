@@ -177,21 +177,6 @@ class BGMAlbumTableSectionHeaderView: UITableViewHeaderFooterView {
         
         headerContentView.layer.cornerRadius = 8
         
-//        if isFirst, isLast {
-//            coverGrayBg1.isHidden = true
-//            coverGrayBg2.isHidden = true
-//        } else if isFirst {
-//            coverGrayBg1.isHidden = true
-//            coverGrayBg2.isHidden = false
-//        } else if isLast {
-//            coverGrayBg1.isHidden = false
-//            coverGrayBg2.isHidden = true
-//        } else {
-//            coverGrayBg1.isHidden = false
-//            coverGrayBg2.isHidden = false
-//        }
-        
-        
         if isFirst, isLast {
             if isFold {
                 headerContentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMinXMaxYCorner,

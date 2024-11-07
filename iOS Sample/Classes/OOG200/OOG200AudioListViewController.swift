@@ -183,7 +183,7 @@ class OOG200AudioListViewController: UIViewController, AudioPlayerOwner {
             self.tableView.reloadData()
             if let song = currentSong {
                 // 重设当前播放歌曲下标，从喜爱列表移除正在播放的歌曲，可能会导致currentIndexPath错误，并导致播放状态等出现未正常变化的问题
-                self.playerProvider.resetCurrentIndexBy(song)
+                self.playerProvider.resetCurrentIndexBy(song, playFirstIfNotCatch: false)
             }
         }
     }
@@ -233,7 +233,7 @@ class OOG200AudioListViewController: UIViewController, AudioPlayerOwner {
             self.tableView.reloadData()
             if let song = currentSong {
                 // 重设当前播放歌曲下标，从喜爱列表移除正在播放的歌曲，可能会导致currentIndexPath错误，并导致播放状态等出现未正常变化的问题
-                self.playerProvider.resetCurrentIndexBy(song)
+                self.playerProvider.resetCurrentIndexBy(song, playFirstIfNotCatch: true)
             }
         }
     }
@@ -342,10 +342,10 @@ extension OOG200AudioListViewController: UITableViewDelegate, UITableViewDataSou
             }
         }
         
-        header.updateCorner(isFirst: isFirst, isLast: isLast, isFold: isFold)
-        
+
         header.titleLabel.text = album.name
         header.subtitleLabel.text = "\(album.mediaList.count) 歌曲"
+        header.updateCorner(isFirst: isFirst, isLast: isLast, isFold: isFold)
         
         header.isLoop = isLoop
         header.loopAction = { [weak self] header in

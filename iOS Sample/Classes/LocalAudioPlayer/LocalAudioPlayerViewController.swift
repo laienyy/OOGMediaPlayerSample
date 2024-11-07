@@ -62,7 +62,8 @@ class LocalAudioPlayerViewController: UIViewController {
         
         Task {
             do {
-                try await playerProvider.getMusics(.oog200, [.animation])
+                let info = GetBGMListApiInfo(scheme: .dev, project: .oog200, type: .animation)
+                try await playerProvider.getMusics(info: info)
             } catch let error {
 //                self.statusLabel.text = ""
                 print("Get media list failed:", error.localizedDescription)
