@@ -18,7 +18,6 @@ protocol AudioPlayerOwner {
     var settings: OOGAudioPlayerSettings { get }
 }
 
-@MainActor
 extension AudioPlayerOwner {
     
     // 设置循环播放 (非单曲、专辑循环使用)

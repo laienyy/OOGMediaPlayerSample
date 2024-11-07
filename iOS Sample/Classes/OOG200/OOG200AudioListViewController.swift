@@ -212,20 +212,20 @@ class OOG200AudioListViewController: UIViewController, AudioPlayerOwner {
             guard favAlbum.mediaList.count > 0 else {
                 // 歌曲数量为0，删除section
                 self.playerProvider.albumList.removeAll(where: { $0.id == self.favAlbum.id })
-                print("[TableView] Delete section -", self.playerProvider.albumList.count)
+//                print("[TableView] Delete section -", self.playerProvider.albumList.count)
                 self.tableView.deleteSections([0], with: .automatic)
                 return
             }
             
             guard !self.isFold(section: 0) else {
                 // 被折叠，刷新整个section
-                print("[TableView] Reload section -", self.playerProvider.albumList.count)
+//                print("[TableView] Reload section -", self.playerProvider.albumList.count)
                 self.tableView.reloadSections([0], with: .automatic)
                 return
             }
             
             let indexPath = IndexPath(row: index, section: 0)
-            print("[TableView] Delete row -", index, 0)
+//            print("[TableView] Delete row -", index, 0)
             self.tableView.deleteRows(at: [indexPath], with: .bottom)
             
         } completion: { finished in
@@ -243,14 +243,14 @@ class OOG200AudioListViewController: UIViewController, AudioPlayerOwner {
 extension OOG200AudioListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        print("[TableView] Album count:", playerProvider.albumList.count)
+//        print("[TableView] Album count:", playerProvider.albumList.count)
         return playerProvider.albumList.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let fold = isFold(section: section)
         let number = fold ? 0 : playerProvider.albumList[section].mediaList.count
-        print("[TableView] Section \(section) count:", number)
+//        print("[TableView] Section \(section) count:", number)
         return number
     }
     
@@ -306,7 +306,7 @@ extension OOG200AudioListViewController: UITableViewDelegate, UITableViewDataSou
         
         guard indexPath != playerProvider.currentIndexPath else {
             
-            print("Current ID \(playerProvider.currentItem()?.id ?? -10), selected ID \(playerProvider.getSong(at: indexPath)?.id ?? -11)")
+//            print("Current ID \(playerProvider.currentItem()?.id ?? -10), selected ID \(playerProvider.getSong(at: indexPath)?.id ?? -11)")
             
             if playerProvider.playerStatus == .playing {
                 playerProvider.pause()
