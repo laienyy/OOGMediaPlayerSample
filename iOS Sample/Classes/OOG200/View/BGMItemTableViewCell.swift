@@ -27,6 +27,7 @@ class BGMItemTableViewCell: UITableViewCell {
     
     var playingStateView = LottieAnimationView()
     var downloadProgressStatusView = UILabel()
+    var downloadProgressView = CircleProgressView()
     var nameLabel = UILabel()
     var loopButton = UIButton(type: .custom)
     var favoriteButton = UIButton(type: .custom)
@@ -155,8 +156,13 @@ class BGMItemTableViewCell: UITableViewCell {
         
         loadAnimationView()
         
+        downloadProgressView.showText = false
+        downloadProgressView.style.lineWidth = 2
+        downloadProgressView.contentInsets = .init(top: 5, left: 5, bottom: 5, right: 5)
+        downloadProgressView.setNeedsDisplay()
+        
         stackView.addArrangedSubview(playingStateView)
-        stackView.addArrangedSubview(downloadProgressStatusView)
+        stackView.addArrangedSubview(downloadProgressView)
         stackView.addArrangedSubview(nameLabel)
         stackView.addArrangedSubview(loopButton)
         stackView.addArrangedSubview(favoriteButton)
@@ -172,8 +178,8 @@ class BGMItemTableViewCell: UITableViewCell {
             make.width.height.equalTo(25)
         }
         
-        downloadProgressStatusView.snp.makeConstraints { make in
-            make.width.height.equalTo(25)
+        downloadProgressView.snp.makeConstraints { make in
+            make.width.height.equalTo(24)
         }
         
         loopButton.snp.makeConstraints { make in
@@ -198,7 +204,7 @@ class BGMItemTableViewCell: UITableViewCell {
         }
         
         playingStateView.isHidden = true
-        downloadProgressStatusView.isHidden = true
+        downloadProgressView.isHidden = true
         nameLabel.text = "Song"
         
         loopButton.setImage(UIImage(named: "bgm_single_loop"), for: .normal)
@@ -267,12 +273,12 @@ extension BGMItemTableViewCell {
     
     func handleDownloadAction() {
         
-        if model?.downloadProgress.isDownloaded ?? true {
-            downloadProgressStatusView.isHidden = true
+        if model?.useCache == true, model?.downloadProgress.isDownloaded ?? true {
+            downloadProgressView.isHidden = true
             return
         }
         
-        downloadProgressStatusView.isHidden = false
+        downloadProgressView.isHidden = false
         
         model?.observeDownloadProgress(self) { [weak self] model, status in
             guard self?.model?.id == model.id else {
@@ -280,10 +286,10 @@ extension BGMItemTableViewCell {
             }
             switch status {
             case .downloading(let progress):
-                self?.downloadProgressStatusView.isHidden = false
-                self?.downloadProgressStatusView.text = "\(Int(progress * 100))%"
+                self?.downloadProgressView.isHidden = false
+                self?.downloadProgressView.setProgress(progress, animated: false)
             case .downloaded:
-                self?.downloadProgressStatusView.text = "100%"
+                self?.downloadProgressView.setProgress(1, animated: false)
             default:
                 break
             }
@@ -313,14 +319,14 @@ extension BGMItemTableViewCell {
     
     func updateUIByStatus() {
         
-        downloadProgressStatusView.isHidden = true
+        downloadProgressView.isHidden = true
         
         switch cellStatus {
         case .downloading:
             let color = #colorLiteral(red: 0.2341707945, green: 0.5062331557, blue: 0.3894308805, alpha: 1)
             playingStateView.isHidden = true
             nameLabel.textColor = color
-            downloadProgressStatusView.textColor = color
+            downloadProgressView.style.tintColor = color
             handleDownloadAction()
         case .playing:
             playingStateView.isHidden = false
@@ -332,9 +338,13 @@ extension BGMItemTableViewCell {
             nameLabel.textColor = #colorLiteral(red: 0.2341707945, green: 0.5062331557, blue: 0.3894308805, alpha: 1)
         case .idle:
             nameLabel.textColor = .black
-            downloadProgressStatusView.textColor = .black
+            downloadProgressView.style.tintColor = .black
             playingStateView.isHidden = true
             playingStateView.pause()
+            
+            if model?.downloadProgress.isDownloading ?? false {
+                downloadProgressView.isHidden = false
+            }
         }
     }
 }

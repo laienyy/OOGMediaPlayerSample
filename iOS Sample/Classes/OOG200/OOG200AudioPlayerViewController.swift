@@ -105,7 +105,7 @@ class OOG200AudioPlayerViewController: UIViewController, AudioPlayerOwner {
                 // 加载歌曲
                 try await playerProvider.getMusics(scheme,
                                                    .oog200,
-                                                   types: [.animation, .planClassicAndChair, .poseLibrary],
+                                                   types: [.animation],
                                                    playAutomatically: false)
                 hud.hide(animated: true, afterDelay: 0.5)
                 // 根据设置，同步播放器
