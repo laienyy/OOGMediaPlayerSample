@@ -102,15 +102,13 @@ class OOG200AudioPlayerViewController: UIViewController, AudioPlayerOwner {
             do {
                 hud.show(animated: true)
                 // 加载歌曲
-                try await playerProvider.getMusics(scheme,
-                                                   .oog200,
-                                                   types: [.animation],
-                                                   playAutomatically: false)
+                try await playerProvider.addMusicsFromServer(scheme, .oog200, types: [.animation], playAutomatically: false)
+                
                 hud.hide(animated: true, afterDelay: 0.5)
                 // 根据设置，同步播放器
                 playerProvider.syncSettings(settings)
                 playerProvider.resumePlayAudioBySetting(settings)
-
+                
                 if playerProvider.currentIndexPath == nil {
                     // 当根据设置未开始自动播放时，此处开始自动播放第一首
                     playerProvider.playNext()
